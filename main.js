@@ -45,7 +45,7 @@ app.get("/api/restart", function (req, res) {
 });
 
 app.get("/api/universes", function (req, res) {
-   //gets all Fixture objects
+   //gets all Universe objects
    res.send(GetUniverses());
 });
 
