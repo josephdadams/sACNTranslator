@@ -1,0 +1,22 @@
+{
+    "name": "sACNTranslator",
+    "version": "1.0.0",
+    "description": "Listens to Streaming ACN data on the local subnet and runs actions when specified DMX addresses are set to specific values.",
+    "keywords": [
+        "util",
+        "functional",
+        "server",
+        "client",
+        "browser",
+        "streamingacn",
+        "sacn",
+        "dmx"
+    ],
+    "license": "MIT",
+    "author": "Joseph Adams",
+    "dependencies": {
+        "body-parser": "^1.18.3",
+        "e131": "^1.1.3",
+        "express": "^4.16.4"
+    }
+}

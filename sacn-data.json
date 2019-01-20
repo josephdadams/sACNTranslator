@@ -1,0 +1,26 @@
+{
+ "Fixtures": [
+  {
+   "id": "fixture-1",
+   "name": "Shades Down",
+   "universe": 1,
+   "address": 512,
+   "triggerValue": 255,
+   "actionType": "HTTP",
+   "action": "http://10.20.20.61:4400/shades_down",
+   "lastValue": 0
+  },
+  {
+   "id": "fixture-2",
+   "name": "Shades Up",
+   "universe": "1",
+   "address": 511,
+   "triggerValue": "255",
+   "actionType": "HTTP",
+   "action": "http://10.20.20.61:4400/shades_up"
+  }
+ ],
+ "Universes": [
+  1
+ ]
+}

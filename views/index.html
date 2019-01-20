@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>sACN Translator Settings</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body
+            {
+                font-family: Helvetica, Arial;
+                background:#ffffff;
+            }    
+            #container
+            {
+                position: relative;
+            }
+
+            #divLicense
+            {
+                background: #dddddd;
+                font-style: italic;
+            }
+
+            .code
+            {
+                font-family: Courier New, monospace;
+                background: #eee;
+            }
+
+        </style>
+        <script src="js/jquery-3.3.1.min.js"></script>
+        <script>
+            function loadSettings()
+            {
+                //gets the latest list of universes and fixtures from the API
+                getUniverses();
+                getFixtures();
+                
+                loadDMXAddresses();
+            }
+            
+            function loadDMXAddresses()
+            {
+                let selAddress = document.getElementById("selAddress");
+                
+                for (let i = 1; i <= 512; i++)
+                {
+                    let optAddress = document.createElement("option");
+                    optAddress.value = i;
+                    optAddress.text = i;
+                    selAddress.appendChild(optAddress);
+                }
+            }
+            
+            function getUniverses()
+            {
+                let divUniverses = document.getElementById("divUniverses");
+                let selUniverse = document.getElementById("selUniverse");
+                
+                $.getJSON('/api/universes', function(data) {
+                    divUniverses.innerHTML = "";
+                    selUniverse.innerHTML = "";
+                    
+                    for (let i = 0; i < data.length; i++)
+                    {
+                        let divUniverse = document.createElement("div");
+                        let spanUniverseNumber = document.createElement("span");
+                        spanUniverseNumber.innerHTML = data[i];
+                        let btnDeleteUniverse = document.createElement("button");
+                        btnDeleteUniverse.innerHTML = "Delete";
+                        btnDeleteUniverse.setAttribute('onclick', 'DeleteUniverse("' + data[i] + '");');
+                        divUniverse.appendChild(spanUniverseNumber);
+                        divUniverse.appendChild(btnDeleteUniverse);
+                        divUniverses.appendChild(divUniverse);
+                        
+                        let optUniverse = document.createElement("option");
+                        optUniverse.value = data[i];
+                        optUniverse.text = data[i];
+                        selUniverse.appendChild(optUniverse);
+                    }
+                });
+            }
+            
+            function getFixtures()
+            {
+                let divFixtures = document.getElementById("divFixtures");
+                
+                divFixtures.innerHTML = "";
+                
+                $.getJSON('/api/fixtures', function(data) {
+                    for (let i = 0; i < data.length; i++)
+                    {
+                        let divFixture = document.createElement("div");
+                        divFixture.innerHTML = data[i].name + " (" + data[i].id + ")";
+                        
+                        let btnEditFixture = document.createElement("button");
+                        btnEditFixture.innerHTML = "Edit";
+                        btnEditFixture.setAttribute('onclick', 'EditFixture("' + data[i].id + '");');
+                        
+                        divFixture.appendChild(btnEditFixture);
+                        
+                        let btnDeleteFixture = document.createElement("button");
+                        btnDeleteFixture.innerHTML = "Delete";
+                        btnDeleteFixture.setAttribute('onclick', 'DeleteFixture("' + data[i].id + '");');
+                        
+                        divFixture.appendChild(btnDeleteFixture);
+                        
+                        divFixtures.appendChild(divFixture);
+                    }
+                });   
+            }
+            
+            function DeleteUniverse(universe)
+            {
+                $.getJSON('/api/universe/delete/' + universe, function(data) {
+                    console.log(data);
+                });
+                
+                getUniverses();
+            }
+            
+            function AddUniverse()
+            {
+                let universe = parseInt(document.getElementById("txtUniverseNumber").value);
+                
+                if (Number.isInteger(universe))
+                {
+                    if ((universe > 0) && (universe <= 63999))
+                    {
+                        $.getJSON('/api/universe/add/' + universe, function(data) {
+                            console.log(data);
+                        });
+                        document.getElementById("txtUniverseNumber").value = "";
+                    }
+                    else
+                    {
+                        alert("Invalid Universe Value. Must be between 1 and 63999.");
+                    }
+                }
+                else
+                {
+                    alert("Invalid Universe Value.");
+                }
+                
+                getUniverses();
+            }
+            
+            function ShowAddFixture()
+            {
+                let btnShowAddFixture = document.getElementById("btnShowAddFixture");
+                btnShowAddFixture.style.display = "none";
+                
+                let divFixtureFields = document.getElementById("divFixtureFields");
+                divFixtureFields.style.display = "block";
+                
+                let spanFixtureID = document.getElementById("spanFixtureID");
+                spanFixtureID.style.display = "none";
+                
+                let btnAddFixture = document.getElementById("btnAddFixture");
+                btnAddFixture.style.display = "block";
+                
+                let btnUpdateFixture = document.getElementById("btnUpdateFixture");
+                btnUpdateFixture.style.display = "none";
+                
+                let txtFixtureName = document.getElementById("txtFixtureName");
+                let selUniverse = document.getElementById("selUniverse");
+                let selAddress = document.getElementById("selAddress");
+                let txtTriggerValue = document.getElementById("txtTriggerValue");
+                let selActionType = document.getElementById("selActionType");
+                let txtAction = document.getElementById("txtAction");
+                
+                txtFixtureName.value = "";
+                selUniverse.selectedIndex = 0;
+                selAddress.selectedIndex = 0;
+                txtTriggerValue.value = "255";
+                selActionType.selectedIndex = 0;
+                txtAction.value = "";                
+            }
+            
+            function AddFixture()
+            {
+                let btnShowAddFixture = document.getElementById("btnShowAddFixture");
+                btnShowAddFixture.style.display = "block";
+                
+                let divFixtureFields = document.getElementById("divFixtureFields");
+                divFixtureFields.style.display = "none";
+                
+                let txtFixtureName = document.getElementById("txtFixtureName");
+                let selUniverse = document.getElementById("selUniverse");
+                let selAddress = document.getElementById("selAddress");
+                let txtTriggerValue = document.getElementById("txtTriggerValue");
+                let selActionType = document.getElementById("selActionType");
+                let txtAction = document.getElementById("txtAction");
+                
+                let fixtureObj = {};
+                
+                fixtureObj.name = txtFixtureName.value;
+                fixtureObj.universe = parseInt(selUniverse.options[selUniverse.selectedIndex].value);
+                fixtureObj.address = parseInt(selAddress.options[selAddress.selectedIndex].value);
+                fixtureObj.triggerValue = parseInt(txtTriggerValue.value);
+                fixtureObj.actionType = selActionType.options[selActionType.selectedIndex].value;
+                fixtureObj.action = txtAction.value;
+                
+                jQuery.ajax({
+                    contentType: "application/json",
+                    url: "/api/fixture/add",
+                    type: "POST",
+                    data: JSON.stringify(fixtureObj),
+                    dataType: "json",
+                    success: function(data) {
+                       console.log(data);
+                    }
+                });
+                
+                getFixtures();
+            }
+            
+            function EditFixture(fixtureID)
+            {
+                let divFixtureFields = document.getElementById("divFixtureFields");
+                divFixtureFields.style.display = "block";
+                
+                let spanFixtureID = document.getElementById("spanFixtureID");
+                spanFixtureID.style.display = "block";
+                
+                let btnAddFixture = document.getElementById("btnAddFixture");
+                btnAddFixture.style.display = "none";
+                
+                let btnUpdateFixture = document.getElementById("btnUpdateFixture");
+                btnUpdateFixture.style.display = "block";
+                
+                let txtFixtureID = document.getElementById("txtFixtureID");
+                let txtFixtureName = document.getElementById("txtFixtureName");
+                let selUniverse = document.getElementById("selUniverse");
+                let selAddress = document.getElementById("selAddress");
+                let txtTriggerValue = document.getElementById("txtTriggerValue");
+                let selActionType = document.getElementById("selActionType");
+                let txtAction = document.getElementById("txtAction");
+                
+                $.getJSON('/api/fixture/' + fixtureID, function(data) {
+                    console.log(data);
+                    txtFixtureID.value = data.fixture.id;
+                    txtFixtureName.value = data.fixture.name;
+                    $('#selUniverse option').each(function(index, option)
+                    {
+                        if (option.text === data.fixture.universe.toString())
+                        {
+                            option.selected = true;
+                        }
+                    });
+                    $('#selAddress option').each(function(index, option)
+                    {
+                        if (option.text === data.fixture.address.toString())
+                        {
+                            option.selected = true;
+                        }
+                    });
+                    
+                    txtTriggerValue.value = data.fixture.triggerValue;
+                    $('#selActionType option').each(function(index, option)
+                    {
+                        if (option.text === data.fixture.actionType.toString())
+                        {
+                            option.selected = true;
+                        }
+                    });
+                    txtAction.value = data.fixture.action;
+                });
+            }
+            
+            function UpdateFixture()
+            {
+                let divFixtureFields = document.getElementById("divFixtureFields");
+                divFixtureFields.style.display = "none";
+                
+                let fixtureObj = {};
+                
+                let txtFixtureID = document.getElementById("txtFixtureID");
+                let txtFixtureName = document.getElementById("txtFixtureName");
+                let selUniverse = document.getElementById("selUniverse");
+                let selAddress = document.getElementById("selAddress");
+                let txtTriggerValue = document.getElementById("txtTriggerValue");
+                let selActionType = document.getElementById("selActionType");
+                let txtAction = document.getElementById("txtAction");
+                
+                fixtureObj.id = txtFixtureID.value;
+                fixtureObj.name = txtFixtureName.value;
+                fixtureObj.universe = selUniverse.options[selUniverse.selectedIndex].value;
+                fixtureObj.address = selAddress.options[selAddress.selectedIndex].value;
+                fixtureObj.triggerValue = txtTriggerValue.value;
+                fixtureObj.actionType = selActionType.options[selActionType.selectedIndex].value;
+                fixtureObj.action = txtAction.value;
+                
+                jQuery.ajax({
+                    contentType: "application/json",
+                    url: "/api/fixture/update/" + fixtureObj.id,
+                    type: "POST",
+                    data: JSON.stringify(fixtureObj),
+                    dataType: "json",
+                    success: function(data) {
+                       console.log(data);
+                    }
+                });
+                
+                getFixtures();
+            }
+            
+            function Cancel()
+            {
+                let btnShowAddFixture = document.getElementById("btnShowAddFixture");
+                btnShowAddFixture.style.display = "block";
+                
+                let divFixtureFields = document.getElementById("divFixtureFields");
+                divFixtureFields.style.display = "none";
+            }
+            
+            function DeleteFixture(fixtureID)
+            {
+                $.getJSON('/api/fixture/delete/' + fixtureID, function(data) {
+                    console.log(data);
+                });
+                
+                getFixtures();
+            }
+            
+            function RestartService()
+            {
+                $.getJSON('/api/restart', function(data) {
+                    console.log(data);
+                });
+                
+                loadSettings();
+            }
+        </script>
+    </head>
+    <body onload="loadSettings();">
+        <div><b>sACN Translator</b> | <a href="/about">About this Program</a></div>
+        <br /><br />
+        <b>Universes:</b><br /><br />
+        <div id="divUniverses"></div><br />
+        <input type="text" id="txtUniverseNumber" size="3"/><button id="btnAddUniverse" onclick="AddUniverse();">Add Universe</button>
+        <br /><br /><br />
+        <b>Fixtures:</b><br /><br />
+        <div id="divFixtures"></div>
+        <br /><br />
+        <button id="btnShowAddFixture" onclick="ShowAddFixture();">Add New Fixture</button><br /><br />
+        <div id="divFixtureFields" style="display:none;">
+            <span id="spanFixtureID" style="display:none;">Fixture ID: <input type="text" size="10" id="txtFixtureID" readonly /><br /></span>
+            Name: <input type="text" size="25" id="txtFixtureName" /><br />
+            Universe: <select id="selUniverse"></select><br />
+            Address: <select id="selAddress"></select><br />
+            Trigger Value: <input type="text" size="3" id="txtTriggerValue" /><br />
+            Action Type: <select id="selActionType"><option value="HTTP">HTTP</option></select><br />
+            Action: <input type="text" size="50" id="txtAction" /><br />
+            <button id="btnAddFixture" onclick="AddFixture();" style="display:none;">Add Fixture</button>
+            <button id="btnUpdateFixture" onclick="UpdateFixture();" style="display:none;">Update Fixture</button>
+            <button id="btnCancelFixture" onclick="Cancel();">Cancel</button>
+        </div>
+        <br /><br />
+        <button id="btnRestartService" onclick="RestartService();">Restart Service</button>
+    </body>
+</html>
