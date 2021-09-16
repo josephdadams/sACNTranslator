@@ -1,6 +1,6 @@
 {
     "name": "sACNTranslator",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Listens to Streaming ACN data on the local subnet and runs actions when specified DMX addresses are set to specific values.",
     "keywords": [
         "util",

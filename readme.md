@@ -49,6 +49,21 @@ Make a POST request to `/api/fixture/*fixtureID*`, where fixtureID is the ID of 
 *Deleting a Fixture:*
 
 Make a POST request to `/api/fixture/delete/*fixtureID*`, where fixtureID is the ID of the Fixture object.
+
+## Scenes:
+sACN Translator can capture sACN data on the Universes you are listening to and recall them.
+
+*Capturing a Scene:*
+
+Make a GET request to `/api/capture/cueNumber`, where `cueNumber` is the number or name of the cue you want to store. It will only capture the Universes you are currently monitoring.
+
+*Recalling a Scene:*
+
+Make a GET request to `/api/recall/cueNumber`, where cueNumber is the name of the cue you want to recall. It will only recall the Universes that were being monitored at the time it was initially captured.
+
+*Clearing a Scene:*
+
+Make a GET request to `/api/clear`.
         
 ## Restarting The Service:
 Make a GET request to `/api/restart` to restart the listening service.
